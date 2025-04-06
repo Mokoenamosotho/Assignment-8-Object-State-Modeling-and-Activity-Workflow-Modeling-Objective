@@ -1,162 +1,293 @@
+
 # Activity Workflow Modeling with Activity Diagrams
 
-8 complex workflows from your system
+Workflow 1: Database Backup Process
+Activity Diagram (Mermaid syntax):
 
-1. User Registration and Verification, 
-2. Submit Recovery Request, 
-3. Review and Approve Recovery Request, 
-4. Execute Recovery Operation, 
-5. Predict System Failure, 
-6. Incident Management, 
-7. AI Model Training and Deployment, 
-8. Automated Notification Dispatch
+stateDiagram-v2
+    [*] --> Start
+    Start --> CheckBackupSchedule
+    CheckBackupSchedule --> BackupRequired: Backup is scheduled
+    BackupRequired --> BackupInProgress
+    BackupInProgress --> BackupSuccessful: Backup completed
+    BackupInProgress --> BackupFailed: Backup failed
+    BackupSuccessful --> End
+    BackupFailed --> RetryBackup: Retry backup
+    RetryBackup --> BackupInProgress
+    RetryBackup --> End: Max retries reached
 
-Workflow 1: User Registration
-Mermaid Diagram
+Explanation:
+Start/End Nodes:
 
-%%{init: {'theme': 'default'}}%%
-flowchart TD
-    subgraph User
-        A1(Start) --> A2[Fill Registration Form]
-        A2 --> A3[Submit Form]
-    end
+Start: The backup process starts based on the scheduled time.
+End: The backup process either ends successfully or after a defined number of retries.
 
-    subgraph System
-        A3 --> B1[Validate Data]
-        B1 --> B2{Is Data Valid?}
-        B2 -- No --> B3[Show Error]
-        B2 -- Yes --> B4[Create Account]
-        B4 --> B5[Send Verification Email]
-        B5 --> A4[End]
-    end
+Actions:
+CheckBackupSchedule: The system checks whether a backup is required based on the schedule.
+BackupRequired: If a backup is required, the system initiates the backup process.
+BackupInProgress: The system starts performing the backup.
+BackupSuccessful: If the backup completes successfully, the process ends.
+BackupFailed: If the backup fails, a retry mechanism is triggered.
+RetryBackup: The system retries the backup process a defined number of times before aborting.
 
+Decisions:
+Is backup required?: Determines whether to start the backup based on the schedule.
+Backup failed?: Determines whether to retry the backup if it fails.
 
-Explanation
-This workflow captures the registration process. It ensures data validity before creating an account. The system sends a verification email to complete the process. This ensures secure onboarding, aligning with the security stakeholder requirement.
+Swimlanes:
+System: The system checks the backup schedule, performs the backup, and retries if necessary.
 
-Workflow 2: Submit Recovery Request
-Mermaid Diagram
+Stakeholder Concerns:
+The backup process aligns with the system administrator's requirement to automate backups efficiently, reducing manual oversight and ensuring timely recovery (FR-004).
 
-flowchart TD
-    subgraph User
-        A1(Start) --> A2[Enter Recovery Details]
-        A2 --> A3[Submit Request]
-    end
+Workflow 2: Database Recovery Process
+Activity Diagram (Mermaid syntax):
 
-    subgraph System
-        A3 --> B1[Check Dependencies]
-        B1 --> B2{All Requirements Met?}
-        B2 -- No --> B3[Show Missing Info]
-        B2 -- Yes --> B4[Forward to Reviewer]
-        B4 --> A4[End]
-    end
+stateDiagram-v2
+    [*] --> Start
+    Start --> DetectFailure
+    DetectFailure --> RecoveryInitiated: Database failure detected
+    RecoveryInitiated --> CheckReplicaAvailable
+    CheckReplicaAvailable --> ReplicaAvailable: Replica ready
+    CheckReplicaAvailable --> NoReplicaAvailable: No replica found
+    ReplicaAvailable --> FailoverToReplica
+    NoReplicaAvailable --> NotifyAdmin: Notify administrator
+    FailoverToReplica --> RecoveryInProgress
+    RecoveryInProgress --> RecoverySuccessful: Recovery completed
+    RecoveryInProgress --> RecoveryFailed: Recovery failed
+    RecoverySuccessful --> End
+    RecoveryFailed --> RetryRecovery: Retry recovery
+    RetryRecovery --> RecoveryInProgress
+    RetryRecovery --> End: Max retries reached
 
-Explanation
-This diagram handles submitting database recovery requests. Stakeholders are concerned about incomplete inputs; this workflow ensures validation before processing, improving reliability.
+Explanation:
+Start/End Nodes:
+Start: Recovery process triggered by a database failure.
+End: Recovery process ends, either with success or failure.
 
-Workflow 3: Review and Approve Request
-Mermaid Diagram
+Actions:
+DetectFailure: The system detects a database failure.
+RecoveryInitiated: The system initiates the recovery process.
+CheckReplicaAvailable: The system checks if a replica database is available.
+FailoverToReplica: If a replica is available, the system switches to it.
+RecoveryInProgress: The system starts recovering the database.
+RecoverySuccessful: The system successfully recovers the database.
+RecoveryFailed: If the recovery fails, the system retries recovery.
+RetryRecovery: The system retries the recovery process a defined number of times.
 
-flowchart TD
-    subgraph Reviewer
-        A1(Start) --> A2[Open Pending Request]
-        A2 --> A3[Evaluate Details]
-        A3 --> A4{Approve?}
-        A4 -- Yes --> A5[Approve Request]
-        A4 -- No --> A6[Reject Request]
-        A5 --> A7[End]
-        A6 --> A7
-    end
+Decisions:
+Is replica available?: Decides whether to failover to a replica or notify the administrator.
 
-Explanation
-The approval process is critical for governance. It addresses concerns about unauthorized execution. This diagram supports traceability and accountability.
+Swimlanes:
+System: The system handles detection of failures, recovery initiation, replica checks, and recovery attempts.
+Administrator: Notified if recovery fails and no replica is available.
 
-Workflow 4: Execute Recovery
-Mermaid Diagram
+Stakeholder Concerns:
+Ensures the hospital's IT team has a reliable process for database recovery (FR-002) with fallback options when replicas are unavailable. The retry mechanism also ensures high availability and reliability of the system.
 
-flowchart TD
-    subgraph System
-        A1(Start) --> A2[Prepare Recovery Environment]
-        A2 --> A3[Restore Data from Backup]
-        A3 --> A4{Success?}
-        A4 -- No --> A5[Trigger Alert]
-        A4 -- Yes --> A6[Run Validation Checks]
-        A6 --> A7[Log Completion]
-        A5 --> A7
-        A7 --> A8[End]
-    end
+Workflow 3: User Account Registration
+Activity Diagram (Mermaid syntax):
 
-Explanation
-This workflow safeguards successful recovery. It checks system restoration and logs results, meeting the system admin’s need for transparency and error handling.
+stateDiagram-v2
+    [*] --> Start
+    Start --> CollectUserData
+    CollectUserData --> ValidateData
+    ValidateData --> ValidData: Data is valid
+    ValidateData --> InvalidData: Data is invalid
+    ValidData --> CreateAccount
+    InvalidData --> NotifyUser: Notify user of invalid data
+    CreateAccount --> SendConfirmationEmail
+    SendConfirmationEmail --> End
 
-Workflow 5: Predict Failure
-Mermaid Diagram
+Explanation:
+Start/End Nodes:
 
-flowchart TD
-    subgraph System
-        A1(Start) --> A2[Collect Monitoring Data]
-        A2 --> A3[Apply AI Model]
-        A3 --> A4{Failure Likely?}
-        A4 -- No --> A5[Continue Monitoring]
-        A4 -- Yes --> A6[Trigger Alert]
-        A5 --> A7[End]
-        A6 --> A7
-    end
+Start: User registration process starts.
+End: Registration is complete.
 
-Explanation
-This supports predictive maintenance. AI forecasts potential failures early, helping system admins mitigate risks proactively.
+Actions:
+CollectUserData: The system collects user information (e.g., name, email, password).
+ValidateData: The system validates the collected data for correctness.
+CreateAccount: The system creates the user account.
+SendConfirmationEmail: The system sends a confirmation email to the user.
+NotifyUser: The system informs the user if their data is invalid.
+Decisions:
+Is data valid?: Determines whether the collected user data is valid.
 
-Workflow 6: Incident Management
-Mermaid Diagram
+Swimlanes:
+User: Provides data for registration.
+System: Handles data validation, account creation, and sending the confirmation email.
 
-flowchart TD
-    subgraph User
-        A1(Start) --> A2[Report Incident]
-    end
+Stakeholder Concerns:
+The diagram supports the hospital’s goal of ensuring a smooth and secure user account creation process, addressing user concerns about account registration security and validation (FR-008).
 
-    subgraph IT Team
-        A2 --> B1[Assign Technician]
-        B1 --> B2[Investigate Issue]
-        B2 --> B3{Resolved?}
-        B3 -- No --> B2
-        B3 -- Yes --> B4[Close Incident]
-        B4 --> A3[End]
-    end
+Workflow 4: Payment Processing
+Activity Diagram (Mermaid syntax):
 
-Explanation
-This looped workflow handles incident management with continuous assessment until resolution. Meets operational continuity goals.
+stateDiagram-v2
+    [*] --> Start
+    Start --> CollectPaymentDetails
+    CollectPaymentDetails --> ValidatePayment
+    ValidatePayment --> PaymentValid: Payment is valid
+    ValidatePayment --> PaymentInvalid: Payment is invalid
+    PaymentValid --> ProcessPayment
+    PaymentInvalid --> NotifyUser: Notify user of invalid payment
+    ProcessPayment --> ConfirmPayment
+    ConfirmPayment --> End
 
-Workflow 7: Model Training
-Mermaid Diagram
+Explanation:
+Start/End Nodes:
+Start: Payment processing starts.
+End: Payment is successfully processed or fails.
 
-flowchart TD
-    subgraph Data Scientist
-        A1(Start) --> A2[Prepare Training Data]
-        A2 --> A3[Train AI Model]
-        A3 --> A4[Evaluate Accuracy]
-        A4 --> A5{Accuracy > 90%?}
-        A5 -- Yes --> A6[Deploy Model]
-        A5 -- No --> A7[Tune Parameters]
-        A7 --> A3
-        A6 --> A8[End]
-    end
+Actions:
+CollectPaymentDetails: The system collects payment information.
+ValidatePayment: The system validates the payment details.
+ProcessPayment: If the payment is valid, the system processes it.
+ConfirmPayment: After successful payment, a confirmation is generated.
+NotifyUser: The system notifies the user if the payment is invalid.
 
-Explanation
-This iteration-focused process ensures that AI models meet performance standards before deployment. Supports stakeholder concerns over false positives.
+Decisions:
+Is payment valid?: Determines whether the payment details are correct.
 
-Workflow 8: Send Notifications
-Mermaid Diagram
+Swimlanes:
+User: Provides payment details.
+System: Validates payment, processes it, and sends notifications.
 
-flowchart TD
-    subgraph System
-        A1(Start) --> A2[Check Triggers]
-        A2 --> A3{Trigger Type?}
-        A3 -- Backup Complete --> A4[Send Success Notification]
-        A3 -- Recovery Failed --> A5[Send Alert]
-        A4 --> A6[Log Notification]
-        A5 --> A6
-        A6 --> A7[End]
-    end
+Stakeholder Concerns:
+The payment process supports ensuring accurate payment validation and user notifications (FR-007), addressing the finance team's concern for secure transactions.
 
-Explanation
-Ensures timely communication of backup and recovery statuses. Logs help for auditing. Meets stakeholder expectations for transparency and responsiveness.
+Workflow 5: Transaction Rollback on Failure
+Activity Diagram (Mermaid syntax):
+
+stateDiagram-v2
+    [*] --> Start
+    Start --> DetectFailure
+    DetectFailure --> CheckRollbackPossible
+    CheckRollbackPossible --> RollbackPossible: Rollback can be done
+    CheckRollbackPossible --> NoRollbackPossible: No rollback possible
+    RollbackPossible --> PerformRollback
+    NoRollbackPossible --> NotifyAdmin: Notify admin for manual intervention
+    PerformRollback --> End
+
+Explanation:
+Start/End Nodes:
+
+Start: Rollback process is initiated.
+End: Rollback is completed or manual intervention is required.
+
+Actions:
+DetectFailure: The system detects a failure in a transaction.
+CheckRollbackPossible: The system checks if the transaction can be rolled back.
+PerformRollback: If rollback is possible, the system performs it.
+NotifyAdmin: If rollback isn't possible, the admin is notified.
+
+Decisions:
+Can rollback be performed?: Checks whether the transaction can be reversed.
+
+Swimlanes:
+System: Detects failure, checks rollback conditions, and performs rollback or notifies the administrator.
+
+Stakeholder Concerns:
+This workflow ensures transaction integrity (FR-007) and the system’s resilience to errors, providing hospital IT staff with a clear process for handling transaction failures.
+
+Workflow 6: Security Alert Handling
+Activity Diagram (Mermaid syntax):
+
+stateDiagram-v2
+    [*] --> Start
+    Start --> DetectThreat
+    DetectThreat --> AnalyzeThreat
+    AnalyzeThreat --> ThreatValid: Threat is valid
+    ThreatValid --> EscalateAlert
+    AnalyzeThreat --> FalseAlarm: False alarm
+    FalseAlarm --> End
+    EscalateAlert --> ResolveThreat
+    ResolveThreat --> End
+
+Explanation:
+Start/End Nodes:
+
+Start: Security threat detection starts.
+End: The process terminates after resolving or dismissing the threat.
+
+Actions:
+DetectThreat: The system detects a potential security threat.
+AnalyzeThreat: The system analyzes the detected threat.
+EscalateAlert: If the threat is valid, the system escalates the alert.
+ResolveThreat: The system resolves the security threat.
+FalseAlarm: If the threat is not valid, the system ends the process.
+
+Decisions:
+Is the threat valid?: Determines whether the threat requires further action.
+
+Swimlanes:
+System: Detects and analyzes threats, resolves them, or identifies false alarms.
+Administrator: May be involved if escalation or manual resolution is required.
+
+Stakeholder Concerns:
+This workflow addresses security concerns (FR-009), ensuring that potential threats are handled promptly and appropriately.
+
+Workflow 7: Database Replica Synchronization
+Activity Diagram (Mermaid syntax):
+
+stateDiagram-v2
+    [*] --> Start
+    Start --> CheckReplicaStatus
+    CheckReplicaStatus --> SyncRequired: Replica needs syncing
+    SyncRequired --> SyncInProgress
+    SyncInProgress --> SyncCompleted: Sync successful
+    SyncInProgress --> SyncFailed: Sync failed
+    SyncCompleted --> End
+    SyncFailed --> RetrySync: Retry sync
+    RetrySync --> SyncInProgress
+    RetrySync --> End: Max retries reached
+
+Explanation:
+Start/End Nodes:
+
+Start: Synchronization process starts.
+End: Synchronization completes successfully or after max retries.
+
+Actions:
+CheckReplicaStatus: The system checks if the replica needs synchronization.
+SyncInProgress: The system performs the synchronization process.
+SyncCompleted: The synchronization is completed successfully.
+SyncFailed: If synchronization fails, a retry mechanism is triggered.
+RetrySync: The system retries synchronization.
+
+Decisions:
+Does the replica need syncing?: Determines if synchronization is required.
+
+Swimlanes:
+System: Manages synchronization and retry logic.
+
+Stakeholder Concerns:
+Ensures the system is always up-to-date with the primary database, which is vital for maintaining data integrity and availability (FR-003).
+
+Workflow 8: Notification System for Critical Alerts
+Activity Diagram (Mermaid syntax):
+
+stateDiagram-v2
+    [*] --> Start
+    Start --> DetectCriticalAlert
+    DetectCriticalAlert --> GenerateAlertMessage
+    GenerateAlertMessage --> SendNotification
+    SendNotification --> End
+
+Explanation:
+Start/End Nodes:
+
+Start: Alert generation starts.
+End: Alert process ends after notification is sent.
+
+Actions:
+DetectCriticalAlert: The system detects a critical alert.
+GenerateAlertMessage: The system creates a message to notify users.
+SendNotification: The system sends the notification to the appropriate parties.
+
+Swimlanes:
+System: Detects critical alerts, generates messages, and sends notifications.
+
+Stakeholder Concerns:
+This workflow ensures that critical alerts are promptly communicated to the appropriate stakeholders (FR-009), maintaining high security and operational continuity.
